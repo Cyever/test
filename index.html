@@ -1,565 +1,729 @@
 <!DOCTYPE html>
 <html lang="zh-cn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>疯狂的方块：粽子大战</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#4F46E5',
-                        secondary: '#EC4899',
-                        accent: '#10B981',
-                        dark: '#1F2937',
-                        light: '#F9FAFB',
-                        block1: '#3B82F6',
-                        block2: '#EC4899',
-                        block3: '#10B981',
-                        block4: '#F59E0B',
-                        block5: '#8B5CF6',
-                    },
-                    fontFamily: {
-                        game: ['Roboto', 'sans-serif'],
-                    },
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4F46E5",
+              secondary: "#EC4899",
+              accent: "#10B981",
+              dark: "#1F2937",
+              light: "#F9FAFB",
+              block1: "#3B82F6",
+              block2: "#EC4899",
+              block3: "#10B981",
+              block4: "#F59E0B",
+            },
+            fontFamily: {
+              game: ["ys", "sans-serif"],
+            },
+          },
+        },
+      };
     </script>
     <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .game-shadow {
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            }
-            .btn-hover {
-                @apply transition-all duration-300 hover:scale-105 active:scale-95;
-            }
-            .block-appear {
-                animation: blockAppear 0.1s ease-out forwards;
-            }
-            .block-remove {
-                animation: blockRemove 0.1s ease-in forwards;
-            }
-            .block-fall {
-                animation: blockFall 0.1s ease-out forwards;
-            }
-            .block-rise {
-                animation: blockRise 0.1s ease-out forwards;
-            }
-            @keyframes blockAppear {
-                from { opacity: 0; transform: scale(0.8); }
-                to { opacity: 1; transform: scale(1); }
-            }
-            @keyframes blockRemove {
-                from { opacity: 1; transform: scale(1); }
-                to { opacity: 0; transform: scale(0.8); }
-            }
-            @keyframes blockFall {
-                from { transform: translateY(-20px); opacity: 0.8; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-            @keyframes blockRise {
-                from { transform: translateY(20px); opacity: 0.8; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-            .game-container {
-                max-width: 480px;
-                max-height: 640px;
-                aspect-ratio: 1/1;
-                margin: 0 auto;
-            }
-            .block-size {
-                min-width: 0.75rem; 
-                min-height: 0.75rem; 
-            }
-            .btn-container {
-                display: flex;
-                justify-content: center;
-                width: 100%;
-            }
-            .prop-btn {
-                @apply w-12 h-12 rounded-full overflow-hidden btn-hover relative;
-            }
-            .prop-btn::after {
-                content: '';
-                position: absolute;
-                inset: 0;
-                @apply bg-black/30 rounded-full transition-opacity duration-300 opacity-0 hover:opacity-100;
-            }
+      /* 引入本地字体 */
+      @font-face {
+        font-family: "ys"; /* 自定义字体名称 */
+        src: url("./ys.ttf") format("truetype");
+        font-weight: normal;
+        font-style: normal;
+      }
+      @layer utilities {
+        .content-auto {
+          content-visibility: auto;
         }
+        .game-shadow {
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+            0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-hover {
+          @apply transition-all duration-300 hover:scale-105 active:scale-95;
+        }
+        .block-appear {
+          animation: blockAppear 0.2s ease-out forwards;
+        }
+        .block-remove {
+          animation: blockRemove 0.2s ease-in forwards;
+        }
+        .block-fall {
+          animation: blockFall 0.2s ease-out forwards;
+        }
+        .block-rise {
+          animation: blockRise 0.2s ease-out forwards;
+        }
+        @keyframes blockAppear {
+          from {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        @keyframes blockRemove {
+          from {
+            opacity: 1;
+            transform: scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: scale(0.8);
+          }
+        }
+        @keyframes blockFall {
+          from {
+            transform: translateY(-20px);
+            opacity: 0.8;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes blockRise {
+          from {
+            transform: translateY(20px);
+            opacity: 0.8;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .game-container {
+          width: 300px;
+          height: 600px;
+          margin: 0 auto;
+        }
+        .game-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-template-rows: repeat(10, 1fr);
+          gap: 2px;
+          width: 100%;
+          height: 100%;
+        }
+        .block-size {
+          min-width: 0.75rem;
+          min-height: 0.75rem;
+          width: 100%;
+          aspect-ratio: 1/1;
+        }
+        .btn-container {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+        .prop-btn {
+          @apply w-12 h-12 rounded-full overflow-hidden btn-hover relative;
+        }
+        .prop-btn::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          @apply bg-black/30 rounded-full transition-opacity duration-300 opacity-0 hover:opacity-100;
+        }
+        .prop-btn.disabled::after {
+          @apply opacity-100;
+        }
+      }
     </style>
-</head>
-<body class="font-game min-h-screen overflow-hidden">
+  </head>
+  <body class="font-game min-h-screen overflow-hidden">
     <div id="app" class="max-w-3xl w-full mx-auto min-h-screen flex flex-col">
-        <!-- 游戏开始页面 -->
-        <div v-if="!gameStarted" class="flex-1 flex flex-col items-center justify-center p-6 relative"
-             style="background-image: url('./background.jpg'); background-size: cover; background-position: center;">
-            
-            <div class="w-full max-w-md mx-auto relative z-10">
-                <div class="text-center mb-8">
-                    <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold mb-4 text-primary">疯狂的方块</h1>
-                    <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold mb-4 text-primary">粽子大战</h1>
-                </div>
-                
-                <div class="btn-container mb-10">
-                    <button @click="startGame" class="bg-primary hover:bg-primary/80 text-white font-bold py-3 px-10 rounded-full btn-hover text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-                        开始游戏
-                    </button>
-                </div>
-                
-                <div class="mt-auto p-6 bg-white/80 rounded-xl game-shadow">
-                    <h3 class="font-semibold mb-2 text-primary">游戏说明</h3>
-                    <ul class="text-gray-600 space-y-1 text-sm">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
-                            <span>点击方块进行消除</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
-                            <span>消除的方块越多，获得的分数越高</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
-                            <span>每次点击后会增加一行新方块（从底部生成，整体上升）</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
-                            <span>方块到达顶部时游戏结束</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+      <!-- 游戏开始页面 -->
+      <div
+        v-if="!gameStarted"
+        class="flex-1 flex flex-col items-center justify-center p-6 relative"
+        style="
+          background-image: url('./background.jpg');
+          background-size: cover;
+          background-position: center;
+        "
+      >
+        <div class="w-full max-w-md mx-auto relative z-10">
+          <div class="text-center mb-8">
+            <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold mb-4 text-dark">
+              疯狂的方块
+            </h1>
+            <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold mb-4 text-dark">
+              粽子大战
+            </h1>
+          </div>
+
+          <div class="btn-container mb-10">
+            <button
+              @click="startGame"
+              class="bg-green-800 hover:bg-green-500 text-white font-bold py-3 px-10 rounded-full btn-hover text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+            >
+              开始游戏
+            </button>
+          </div>
+
+          <div class="mt-auto p-6 bg-white/80 rounded-xl game-shadow">
+            <h3 class="font-semibold mb-2 text-green-800">游戏说明</h3>
+            <ul class="text-gray-600 space-y-1 text-sm">
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>点击方块进行消除</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>消除的方块越多，获得的分数越高</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>每次点击后会增加一行新方块（从底部生成，整体上升）</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>炸弹可以消除前三行方块</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>五彩绳可以使下一次点击不生成新方块</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>龙舟可以随机消除一行方块</span>
+              </li>
+              <li class="flex items-start">
+                <i class="fa fa-check-circle text-accent mt-0.5 mr-1"></i>
+                <span>方块到达顶部时游戏结束</span>
+              </li>
+            </ul>
+          </div>
         </div>
-        
-        <!-- 游戏页面 -->
-        <div v-else class="flex-1 flex flex-col items-center justify-center p-4"
-             :style="{ backgroundImage: `url(${currentBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }">
-            <!-- 游戏标题 -->
-            <div class="text-center mb-3 w-full">
-                <h1 class="text-[clamp(1.5rem,4vw,2rem)] font-bold mb-1.5 bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">疯狂的方块：粽子大战</h1>
-                
-                <!-- 游戏状态信息 -->
-                <div class="flex justify-center gap-3 mb-3">
-                    <div class="bg-dark/60 backdrop-blur-sm rounded-lg p-1.5 game-shadow">
-                        <p class="text-xs text-gray-400">分数</p>
-                        <p class="text-lg font-bold">{{ score }}</p>
-                    </div>
-                    <div class="bg-dark/60 backdrop-blur-sm rounded-lg p-1.5 game-shadow">
-                        <p class="text-xs text-gray-400">行数</p>
-                        <p class="text-lg font-bold">{{ currentRow }}</p>
-                    </div>
-                </div>
-                
-                <!-- 游戏道具图片按钮 -->
-                <div class="flex justify-center gap-2 mb-3">
-                    <button @click="restartGame" class="bg-primary hover:bg-primary/80 text-white font-bold py-1 px-3 rounded-full btn-hover flex items-center text-xs">
-                        <i class="fa fa-refresh mr-1"></i>重新开始
-                    </button>
-                    <button @click="useBomb" class="prop-btn">
-                        <img src="./bomb.jpg" alt="炸弹" class="w-full h-full object-cover">
-                    </button>
-                    <button @click="useRope" class="prop-btn">
-                        <img src="./string.jpg" alt="绳子" class="w-full h-full object-cover">
-                    </button>
-                    <button @click="useDragonBoat" class="prop-btn">
-                        <img src="./ship.jpg" alt="龙舟" class="w-full h-full object-cover">
-                    </button>
-                </div>
+      </div>
+
+      <!-- 游戏页面 -->
+      <div
+        v-else
+        class="flex-1 flex flex-col items-center justify-center p-4"
+        :style="{ backgroundImage: `url(${currentBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }"
+      >
+        <!-- 游戏标题 -->
+        <div class="text-center mb-3 w-full">
+          <h1
+            class="text-[clamp(1.5rem,4vw,2rem)] font-bold mb-1.5 bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary"
+          >
+            疯狂的方块：粽子大战
+          </h1>
+
+          <!-- 游戏状态信息 -->
+          <div class="flex justify-center gap-3 mb-3">
+            <div
+              class="bg-dark/60 backdrop-blur-sm rounded-lg p-1.5 game-shadow"
+            >
+              <p class="text-xs text-gray-400">分数</p>
+              <p class="text-lg font-bold">{{ score }}</p>
             </div>
-            
-            <!-- 游戏区域 -->
-            <div class="relative bg-dark/40 backdrop-blur-sm rounded-xl p-2 game-shadow overflow-hidden w-full game-container">
-                <!-- 游戏网格 - 4列 -->
-                <div class="grid grid-cols-4 gap-1 h-full">
-                    <div 
-                        v-for="(block, index) in gameBlocks" 
-                        :key="index"
-                        :class="getBlockClass(block, index)"
-                        @click="handleBlockClick(index)"
-                        class="rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 block-size"
-                    ></div>
-                </div>
-                
-                <!-- 游戏结束遮罩 -->
-                <div v-if="gameOver" class="absolute inset-0 bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center z-10">
-                    <h2 class="text-2xl font-bold mb-2 text-secondary">游戏结束!</h2>
-                    <p class="text-lg mb-3">你的得分: {{ score }}</p>
-                    <button @click="restartGame" class="bg-accent hover:bg-accent/80 text-white font-bold py-1.5 px-5 rounded-full btn-hover text-base">
-                        再玩一次
-                    </button>
-                </div>
-            </div> 
+            <div
+              class="bg-dark/60 backdrop-blur-sm rounded-lg p-1.5 game-shadow"
+            >
+              <p class="text-xs text-gray-400">行数</p>
+              <p class="text-lg font-bold">{{ currentRow }}</p>
+            </div>
+          </div>
+
+          <!-- 游戏道具图片按钮 -->
+          <div class="flex justify-center gap-2 mb-3">
+            <button
+              @click="restartGame"
+              class="bg-green-800 hover:bg-green-500 text-white font-bold py-1 px-3 rounded-full btn-hover flex items-center text-xs"
+            >
+              <i class="fa fa-refresh mr-1"></i>重新开始
+            </button>
+            <button
+              @click="useBomb"
+              :disabled="bombUsed"
+              :class="{ 'disabled': bombUsed }"
+              class="prop-btn"
+            >
+              <img
+                src="./bomb.jpg"
+                alt="炸弹"
+                class="w-full h-full object-cover"
+              />
+            </button>
+            <button
+              @click="useRope"
+              :disabled="ropeUsed"
+              :class="{ 'disabled': ropeUsed }"
+              class="prop-btn"
+            >
+              <img
+                src="./string.jpg"
+                alt="绳子"
+                class="w-full h-full object-cover"
+              />
+            </button>
+            <button
+              @click="useDragonBoat"
+              :disabled="dragonBoatUsed"
+              :class="{ 'disabled': dragonBoatUsed }"
+              class="prop-btn"
+            >
+              <img
+                src="./ship.jpg"
+                alt="龙舟"
+                class="w-full h-full object-cover"
+              />
+            </button>
+          </div>
         </div>
+
+        <!-- 游戏区域 -->
+        <div
+          class="game-container bg-dark/40 backdrop-blur-sm rounded-xl p-2 game-shadow overflow-hidden w-full h-full overflow-auto"
+        >
+          <!-- 游戏网格 - 5列 -->
+          <div class="grid grid-cols-5 gap-1 h-full">
+            <div
+              v-for="(block, index) in gameBlocks"
+              :key="index"
+              :class="getBlockClass(block, index)"
+              @click="handleBlockClick(index)"
+              class="rounded-md cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 block-size flex items-center justify-center overflow-hidden border-2 border-white bg-dark/20"
+            >
+              <img
+                v-if="block !== null"
+                :src="getBlockImg(block)"
+                class="w-full h-full object-cover pointer-events-none"
+              />
+            </div>
+          </div>
+
+          <!-- 游戏结束遮罩 -->
+          <div
+            v-if="gameOver"
+            class="absolute inset-0 bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center z-10"
+          >
+            <h2 class="text-2xl font-bold mb-2 text-secondary">游戏结束!</h2>
+            <p class="text-lg mb-3">你的得分: {{ score }}</p>
+            <button
+              @click="restartGame"
+              class="bg-accent hover:bg-accent/80 text-white font-bold py-1.5 px-5 rounded-full btn-hover text-base"
+            >
+              再玩一次
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
-        new Vue({
-            el: '#app',
-            data: {
-                gameBlocks: [],
-                score: 0,
-                currentRow: 1,
-                gameStarted: false,
-                gameOver: false,
-                blockColors: ['block1', 'block2', 'block3', 'block4', 'block5'],
-                gridSize: 4,
-                maxRows: 10,
-                // 背景图片列表，替换为你自己的图片路径
-                backgroundImages: [
-                    './bg1.jpg',
-                    './bg2.jpg',
-                    './bg3.jpg',
-                ],
-                currentBackground: '',
-                useRopeNextClick: false
-            },
-            created() {
-                this.initializeGame();
-                this.setRandomBackground();
-            },
-            methods: {
-                // 设置随机背景
-                setRandomBackground() {
-                    const randomIndex = Math.floor(Math.random() * this.backgroundImages.length);
-                    this.currentBackground = this.backgroundImages[randomIndex];
-                },
-                
-                // 初始化游戏
-                initializeGame() {
-                    this.gameBlocks = Array(this.gridSize * this.maxRows).fill(null);
-                    this.score = 0;
-                    this.currentRow = 1;
-                    this.gameStarted = false;
-                    this.gameOver = false;
-                    this.useRopeNextClick = false;
-                    
-                    // 生成初始的几行方块
-                    this.addNewRow();
-                    this.addNewRow();
-                    this.addNewRow();
-                    
-                    // 每次游戏初始化时更换背景
-                    this.setRandomBackground();
-                },
-                
-                // 开始游戏
-                startGame() {
-                    console.log('Starting game...'); // 添加日志确认方法被调用
-                    if (this.gameStarted) return;
-                    
-                    this.gameStarted = true;
-                    this.gameOver = false;
-                },
-                
-                // 重新开始游戏
-                restartGame() {
-                    // 先切换到开始页面
-                    this.gameStarted = false;
-                    this.gameOver = false;
-                    
-                    // 延迟初始化游戏，让用户能看到开始页面的变化
-                    setTimeout(() => {
-                        this.initializeGame();
-                    }, 500);
-                },
-                
-                // 添加新行 - 从底部生成，整体方块向上移动
-                addNewRow() {
-                    // 检查游戏是否结束
-                    if (this.checkGameOver()) {
-                        this.gameOver = true;
-                        return;
-                    }
-                    
-                    // 保存当前状态用于动画
-                    const oldState = [...this.gameBlocks];
-                    
-                    // 移动所有行向上
-                    for (let i = 0; i < this.gridSize * (this.maxRows - 1); i++) {
-                        this.gameBlocks[i] = this.gameBlocks[i + this.gridSize];
-                    }
-                    
-                    // 生成新的一行 (4列)
-                    const newRow = Array(this.gridSize).fill().map(() => {
-                        const colorIndex = Math.floor(Math.random() * this.blockColors.length);
-                        return this.blockColors[colorIndex];
-                    });
-                    
-                    // 添加新行到最底部
-                    const startIndex = this.gridSize * (this.maxRows - 1);
-                    for (let i = 0; i < this.gridSize; i++) {
-                        this.gameBlocks[startIndex + i] = newRow[i];
-                    }
-                    
-                    // 为上升的方块添加动画类
-                    this.$nextTick(() => {
-                        // 找出所有移动了的方块
-                        const movedBlocks = [];
-                        for (let i = 0; i < this.gameBlocks.length; i++) {
-                            if (oldState[i] !== this.gameBlocks[i] && this.gameBlocks[i] !== null) {
-                                movedBlocks.push(i);
-                            }
-                        }
-                        
-                        // 为移动了的方块添加上升动画
-                        movedBlocks.forEach(index => {
-                            const blockElement = document.querySelector(`.block-${index}`);
-                            if (blockElement) {
-                                blockElement.classList.add('block-rise');
-                                // 移除动画类，以便下次可以再次触发
-                                setTimeout(() => {
-                                    blockElement.classList.remove('block-rise');
-                                }, 300);
-                            }
-                        });
-                    });
-                    
-                    this.currentRow++;
-                },
-                
-                // 检查游戏是否结束
-                checkGameOver() {
-                    // 检查顶部行是否有方块
-                    for (let i = 0; i < this.gridSize; i++) {
-                        if (this.gameBlocks[i] !== null) {
-                            return true;
-                        }
-                    }
-                    return false;
-                },
-                
-                // 处理方块点击
-                handleBlockClick(index) {
-                    if (!this.gameStarted || this.gameOver) return;
-                    
-                    const clickedColor = this.gameBlocks[index];
-                    if (!clickedColor) return;
-                    
-                    // 找出所有相连的同色方块
-                    const connectedBlocks = this.findConnectedBlocks(index, clickedColor);
-                    
-                    // 只要有方块（至少1个），就消除它们
-                    if (connectedBlocks.length >= 1) {
-                        this.removeBlocks(connectedBlocks);
-                        
-                        // 计算得分 (相连方块越多，得分越高)
-                        const points = connectedBlocks.length * connectedBlocks.length;
-                        this.score += points;
-                        
-                        // 等待方块移除动画完成后再下落
-                        setTimeout(() => {
-                            this.dropBlocks();
-                            
-                            // 再等待下落动画完成后添加新行，除非使用了绳子
-                            if (!this.useRopeNextClick) {
-                                setTimeout(() => {
-                                    this.addNewRow();
-                                }, 300);
-                            } else {
-                                this.useRopeNextClick = false;
-                            }
-                        }, 300);
-                    }
-                },
-                
-                // 找出相连的同色方块
-                findConnectedBlocks(index, color) {
-                    const visited = new Set();
-                    const stack = [index];
-                    const connected = [];
-                    
-                    while (stack.length > 0) {
-                        const currentIndex = stack.pop();
-                        
-                        // 检查是否已访问或超出边界或颜色不同
-                        if (visited.has(currentIndex) || 
-                            currentIndex < 0 || 
-                            currentIndex >= this.gameBlocks.length || 
-                            this.gameBlocks[currentIndex] !== color) {
-                            continue;
-                        }
-                        
-                        visited.add(currentIndex);
-                        connected.push(currentIndex);
-                        
-                        // 添加相邻方块到栈中
-                        const row = Math.floor(currentIndex / this.gridSize);
-                        const col = currentIndex % this.gridSize;
-                        
-                        // 上
-                        if (row > 0) stack.push(currentIndex - this.gridSize);
-                        // 下
-                        if (row < this.maxRows - 1) stack.push(currentIndex + this.gridSize);
-                        // 左
-                        if (col > 0) stack.push(currentIndex - 1);
-                        // 右
-                        if (col < this.gridSize - 1) stack.push(currentIndex + 1);
-                    }
-                    
-                    return connected;
-                },
-                
-                // 移除方块
-                removeBlocks(indices) {
-                    indices.forEach(index => {
-                        // 添加移除动画类
-                        const blockElement = document.querySelector(`.block-${index}`);
-                        if (blockElement) {
-                            blockElement.classList.add('block-remove');
-                            
-                            // 动画结束后移除方块
-                            setTimeout(() => {
-                                this.gameBlocks[index] = null;
-                            }, 300);
-                        } else {
-                            this.gameBlocks[index] = null;
-                        }
-                    });
-                },
-                
-                // 下落方块
-                dropBlocks() {
-                    // 复制当前的游戏状态
-                    const oldState = [...this.gameBlocks];
-                    
-                    // 创建一个映射表，记录每个方块的原始位置
-                    const originalPositions = {};
-                    for (let i = 0; i < this.gameBlocks.length; i++) {
-                        if (this.gameBlocks[i] !== null) {
-                            originalPositions[i] = i;
-                        }
-                    }
-                    console.log('Before dropBlocks:', this.gameBlocks);
-                    // 对每一列进行处理
-                    for (let col = 0; col < this.gridSize; col++) {
-                        // 收集当前列的所有方块
-                        const columnBlocks = [];
-                        for (let row = 0; row < this.maxRows; row++) {
-                            const index = row * this.gridSize + col;
-                            if (this.gameBlocks[index] !== null) {
-                                columnBlocks.push({
-                                    color: this.gameBlocks[index],
-                                    originalIndex: index
-                                });
-                            }
-                        }
-                        // 清空当前列
-                        for (let row = 0; row < this.maxRows; row++) {
-                            const index = row * this.gridSize + col;
-                            this.gameBlocks[index] = null;
-                        }
-                        
-                        // 重新填充列，从底部开始
-                        const emptySpaces = this.maxRows - columnBlocks.length;
-                        for (let i = 0; i < columnBlocks.length; i++) {
-                            const row = this.maxRows - columnBlocks.length + i;
-                            const index = row * this.gridSize + col;
-                            this.gameBlocks[index] = columnBlocks[i].color;
-                            
-                            // 更新映射表，记录方块的新位置
-                            originalPositions[columnBlocks[i].originalIndex] = index;
-                        }
-                    }
-                    
-                    // 为下落的方块添加动画类
-                    this.$nextTick(() => {
-                        // 找出所有移动了的方块
-                        const movedBlocks = [];
-                        for (const originalIndex in originalPositions) {
-                            const newIndex = originalPositions[originalIndex];
-                            if (parseInt(originalIndex) !== newIndex) {
-                                movedBlocks.push(newIndex);
-                            }
-                        }
-                        
-                        // 为移动了的方块添加下落动画
-                        movedBlocks.forEach(index => {
-                            const blockElement = document.querySelector(`.block-${index}`);
-                            if (blockElement) {
-                                blockElement.classList.add('block-fall');
-                                // 移除动画类，以便下次可以再次触发
-                                setTimeout(() => {
-                                    blockElement.classList.remove('block-fall');
-                                }, 300);
-                            }
-                        });
-                    });
-                },
-                
-                // 获取方块的类名
-                getBlockClass(block, index) {
-                    if (!block) return 'bg-dark/20';
-                    
-                    return `bg-${block} block-appear block-${index}`;
-                },
-                
-                // 使用炸弹道具
-                useBomb() {
-                    if (!this.gameStarted || this.gameOver) return;
-                    
-                    const indicesToRemove = [];
-                    for (let row = 0; row < 3; row++) {
-                        for (let col = 0; col < this.gridSize; col++) {
-                            const index = row * this.gridSize + col;
-                            if (this.gameBlocks[index] !== null) {
-                                indicesToRemove.push(index);
-                            }
-                        }
-                    }
-                    
-                    this.removeBlocks(indicesToRemove);
-                    
-                    // 等待方块移除动画完成后再下落
-                    setTimeout(() => {
-                        this.dropBlocks();
-                        
-                        // 再等待下落动画完成后添加新行
-                        setTimeout(() => {
-                            this.addNewRow();
-                        }, 300);
-                    }, 300);
-                },
-                
-                // 使用绳子道具
-                useRope() {
-                    if (!this.gameStarted || this.gameOver) return;
-                    this.useRopeNextClick = true;
-                },
-                
-                // 使用龙舟道具
-                useDragonBoat() {
-                    if (!this.gameStarted || this.gameOver) return;
-                    
-                    const randomRow = Math.floor(Math.random() * this.maxRows);
-                    const indicesToRemove = [];
-                    for (let col = 0; col < this.gridSize; col++) {
-                        const index = randomRow * this.gridSize + col;
-                        if (this.gameBlocks[index] !== null) {
-                            indicesToRemove.push(index);
-                        }
-                    }
-                    
-                    this.removeBlocks(indicesToRemove);
-                    
-                    // 等待方块移除动画完成后再下落
-                    setTimeout(() => {
-                        this.dropBlocks();
-                        
-                        // 再等待下落动画完成后添加新行
-                        setTimeout(() => {
-                            this.addNewRow();
-                        }, 300);
-                    }, 300);
-                }
+      new Vue({
+        el: "#app",
+        data: {
+          gameBlocks: [],
+          score: 0,
+          currentRow: 1,
+          gameStarted: false,
+          gameOver: false,
+          blockColors: ["block1", "block2", "block3", "block4"],
+          gridSize: 5,
+          maxRows: 10,
+          backgroundImages: ["./bg1.jpg", "./bg2.jpg", "./bg3.jpg"],
+          currentBackground: "",
+          useRopeNextClick: false,
+          bombUsed: false,
+          ropeUsed: false,
+          dragonBoatUsed: false,
+        },
+        created() {
+          this.initializeGame();
+          this.setRandomBackground();
+        },
+        methods: {
+          // 设置随机背景
+          setRandomBackground() {
+            const randomIndex = Math.floor(
+              Math.random() * this.backgroundImages.length
+            );
+            this.currentBackground = this.backgroundImages[randomIndex];
+          },
+
+          // 初始化游戏
+          initializeGame() {
+            this.gameBlocks = Array(this.gridSize * this.maxRows).fill(null);
+            this.score = 0;
+            this.currentRow = 1;
+            this.gameStarted = false;
+            this.gameOver = false;
+            this.useRopeNextClick = false;
+            this.bombUsed = false;
+            this.ropeUsed = false;
+            this.dragonBoatUsed = false;
+
+            // 生成初始的几行方块
+            this.addNewRow();
+            this.addNewRow();
+            this.addNewRow();
+
+            // 每次游戏初始化时更换背景
+            this.setRandomBackground();
+          },
+
+          // 开始游戏
+          startGame() {
+            console.log("Starting game..."); // 添加日志确认方法被调用
+            if (this.gameStarted) return;
+
+            this.gameStarted = true;
+            this.gameOver = false;
+          },
+
+          // 重新开始游戏
+          restartGame() {
+            // 先切换到开始页面
+            this.gameStarted = false;
+            this.gameOver = false;
+
+            // 延迟初始化游戏，让用户能看到开始页面的变化
+            setTimeout(() => {
+              this.initializeGame();
+            }, 500);
+          },
+
+          // 添加新行 - 从底部生成，整体方块向上移动
+          addNewRow() {
+            // 检查游戏是否结束
+            if (this.checkGameOver()) {
+              this.gameOver = true;
+              return;
             }
-        });
+
+            // 保存当前状态用于动画
+            const oldState = [...this.gameBlocks];
+
+            // 移动所有行向上
+            for (let i = 0; i < this.gridSize * (this.maxRows - 1); i++) {
+              this.gameBlocks[i] = this.gameBlocks[i + this.gridSize];
+            }
+
+            // 生成新的一行 (4列)
+            const newRow = Array(this.gridSize)
+              .fill()
+              .map(() => {
+                const colorIndex = Math.floor(
+                  Math.random() * this.blockColors.length
+                );
+                return this.blockColors[colorIndex];
+              });
+
+            // 添加新行到最底部
+            const startIndex = this.gridSize * (this.maxRows - 1);
+            for (let i = 0; i < this.gridSize; i++) {
+              this.gameBlocks[startIndex + i] = newRow[i];
+            }
+
+            // 为上升的方块添加动画类
+            this.$nextTick(() => {
+              // 找出所有移动了的方块
+              const movedBlocks = [];
+              for (let i = 0; i < this.gameBlocks.length; i++) {
+                if (
+                  oldState[i] !== this.gameBlocks[i] &&
+                  this.gameBlocks[i] !== null
+                ) {
+                  movedBlocks.push(i);
+                }
+              }
+
+              // 为移动了的方块添加上升动画
+              movedBlocks.forEach((index) => {
+                const blockElement = document.querySelector(`.block-${index}`);
+                if (blockElement) {
+                  blockElement.classList.add("block-rise");
+                  // 移除动画类，以便下次可以再次触发
+                  setTimeout(() => {
+                    blockElement.classList.remove("block-rise");
+                  }, 300);
+                }
+              });
+            });
+
+            this.currentRow++;
+          },
+
+          // 检查游戏是否结束
+          checkGameOver() {
+            // 检查顶部行是否有方块
+            for (let i = 0; i < this.gridSize; i++) {
+              if (this.gameBlocks[i] !== null) {
+                return true;
+              }
+            }
+            return false;
+          },
+
+          // 处理方块点击
+          handleBlockClick(index) {
+            if (!this.gameStarted || this.gameOver) return;
+
+            const clickedColor = this.gameBlocks[index];
+            if (!clickedColor) return;
+
+            // 找出所有相连的同色方块
+            const connectedBlocks = this.findConnectedBlocks(
+              index,
+              clickedColor
+            );
+
+            // 只要有方块（至少1个），就消除它们
+            if (connectedBlocks.length >= 1) {
+              this.removeBlocks(connectedBlocks);
+
+              // 计算得分 (相连方块越多，得分越高)
+              const points = connectedBlocks.length * connectedBlocks.length;
+              this.score += points;
+
+              // 等待方块移除动画完成后再下落
+              setTimeout(() => {
+                this.dropBlocks();
+
+                // 再等待下落动画完成后添加新行，除非使用了绳子
+                if (!this.useRopeNextClick) {
+                  setTimeout(() => {
+                    this.addNewRow();
+                  }, 300);
+                } else {
+                  this.useRopeNextClick = false;
+                }
+              }, 400);
+            }
+          },
+
+          // 找出相连的同色方块
+          findConnectedBlocks(index, color) {
+            const visited = new Set();
+            const stack = [index];
+            const connected = [];
+            while (stack.length > 0) {
+              const currentIndex = stack.pop();
+              if (
+                visited.has(currentIndex) ||
+                currentIndex < 0 ||
+                currentIndex >= this.gameBlocks.length ||
+                this.gameBlocks[currentIndex] !== color
+              ) {
+                continue;
+              }
+              visited.add(currentIndex);
+              connected.push(currentIndex);
+              // 计算当前行和列（注意：gridSize 应为 5）
+              const row = Math.floor(currentIndex / this.gridSize);
+              const col = currentIndex % this.gridSize;
+              // 上
+              if (row > 0) stack.push(currentIndex - this.gridSize);
+              // 下
+              if (row < this.maxRows - 1)
+                stack.push(currentIndex + this.gridSize);
+              // 左
+              if (col > 0) stack.push(currentIndex - 1);
+              // 右
+              if (col < this.gridSize - 1) stack.push(currentIndex + 1);
+            }
+            return connected;
+          },
+
+          // 移除方块
+          removeBlocks(indices) {
+            indices.forEach((index) => {
+              // 添加移除动画类
+              const blockElement = document.querySelector(`.block-${index}`);
+              if (blockElement) {
+                blockElement.classList.add("block-remove");
+                // 动画结束后移除方块
+                setTimeout(() => {
+                  // 只有在动画结束时才将方块设为 null，防止提前渲染新方块
+                  this.$set(this.gameBlocks, index, null);
+                }, 300);
+              } else {
+                this.$set(this.gameBlocks, index, null);
+              }
+            });
+          },
+
+          // 下落方块
+          dropBlocks() {
+            // 创建一个新的数组来存储下落后方块的状态
+            const newGameBlocks = Array(this.gridSize * this.maxRows).fill(
+              null
+            );
+
+            // 对每一列进行处理
+            for (let col = 0; col < this.gridSize; col++) {
+              // 从底部向上填充新数组
+              let targetRow = this.maxRows - 1;
+
+              // 从底部向上遍历原数组，将非空方块移到新数组的最底部
+              for (
+                let sourceRow = this.maxRows - 1;
+                sourceRow >= 0;
+                sourceRow--
+              ) {
+                const sourceIndex = sourceRow * this.gridSize + col;
+
+                if (this.gameBlocks[sourceIndex] !== null) {
+                  const targetIndex = targetRow * this.gridSize + col;
+                  newGameBlocks[targetIndex] = this.gameBlocks[sourceIndex];
+                  targetRow--;
+                }
+              }
+            }
+
+            // 找出所有移动了的方块
+            const movedBlocks = [];
+            for (let i = 0; i < this.gameBlocks.length; i++) {
+              if (
+                this.gameBlocks[i] !== newGameBlocks[i] &&
+                newGameBlocks[i] !== null
+              ) {
+                movedBlocks.push(i);
+              }
+            }
+
+            // 更新游戏状态
+            this.gameBlocks = newGameBlocks;
+
+            // 添加下落动画
+            this.$nextTick(() => {
+              movedBlocks.forEach((index) => {
+                const blockElement = document.querySelector(`.block-${index}`);
+                if (blockElement) {
+                  blockElement.classList.add("block-fall");
+                  setTimeout(() => {
+                    blockElement.classList.remove("block-fall");
+                  }, 300);
+                }
+              });
+            });
+          },
+
+          // 获取方块的类名
+          getBlockImg(block) {
+            return `./${block}.jpg`;
+          },
+          getBlockClass(block, index) {
+            if (!block) return "bg-dark/20";
+            return `block-appear block-${index}`;
+          },
+
+          // 使用炸弹道具
+          useBomb() {
+            if (!this.gameStarted || this.gameOver || this.bombUsed) return;
+            const indicesToRemove = [];
+            let rowsWithBlocks = 0;
+            let processedRows = 0;
+
+            // 遍历网格，找到所有有方块的行
+            for (let row = 0; row < this.maxRows && rowsWithBlocks < 3; row++) {
+              let hasBlocks = false;
+              const rowIndices = [];
+
+              // 检查当前行是否有方块
+              for (let col = 0; col < this.gridSize; col++) {
+                const index = row * this.gridSize + col;
+                if (this.gameBlocks[index] !== null) {
+                  hasBlocks = true;
+                  rowIndices.push(index);
+                }
+              }
+
+              // 如果有方块，将此行加入待消除列表
+              if (hasBlocks) {
+                indicesToRemove.push(...rowIndices);
+                rowsWithBlocks++;
+              }
+
+              processedRows++;
+            }
+
+            // 只有当找到至少一行有方块时才执行消除
+            if (indicesToRemove.length > 0) {
+              this.removeBlocks(indicesToRemove);
+              this.bombUsed = true;
+
+              // 等待方块移除动画完成后再下落
+              setTimeout(() => {
+                this.dropBlocks();
+              }, 300);
+            }
+          },
+
+          // 使用绳子道具
+          useRope() {
+            if (!this.gameStarted || this.gameOver || this.ropeUsed) return;
+            this.useRopeNextClick = true;
+            this.ropeUsed = true;
+          },
+
+          // 使用龙舟道具
+          useDragonBoat() {
+            if (this.dragonBoatUsed) return;
+            this.dragonBoatUsed = true;
+
+            // 找出所有有方块的行
+            const nonEmptyRows = [];
+            for (let row = 0; row < this.maxRows; row++) {
+              let hasBlock = false;
+              for (let col = 0; col < this.gridSize; col++) {
+                const index = row * this.gridSize + col;
+                if (this.gameBlocks[index] !== null) {
+                  hasBlock = true;
+                  break;
+                }
+              }
+              if (hasBlock) {
+                nonEmptyRows.push(row);
+              }
+            }
+
+            // 如果没有有方块的行，直接返回
+            if (nonEmptyRows.length === 0) {
+              return;
+            }
+
+            // 随机选择一行
+            const randomRow =
+              nonEmptyRows[Math.floor(Math.random() * nonEmptyRows.length)];
+            const blocksToRemove = [];
+
+            // 收集该行所有方块的索引
+            for (let col = 0; col < this.gridSize; col++) {
+              const index = randomRow * this.gridSize + col;
+              if (this.gameBlocks[index] !== null) {
+                blocksToRemove.push(index);
+              }
+            }
+
+            // 移除选中的方块
+            this.removeBlocks(blocksToRemove);
+
+            // 等待方块移除动画完成后，让上方的方块下落
+            setTimeout(() => {
+              this.$nextTick(() => {
+                this.dropBlocks();
+              });
+            }, 500);
+          },
+        },
+      });
     </script>
-</body>
+  </body>
 </html>
